@@ -1,6 +1,7 @@
 package com.crisurubu.minhasfinancas.model.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.crisurubu.minhasfinancas.model.entities.Lancamento;
 import com.crisurubu.minhasfinancas.model.enums.StatusLancamento;
@@ -13,6 +14,7 @@ public interface LancamentoService {
 	List<Lancamento> buscar(Lancamento lancamentoFiltro);
 	void atualizarStatus(Lancamento lancamento, StatusLancamento status);
 	void validar(Lancamento lancamento);
+	Optional<Lancamento> obterPorId(Long id);
 	
 
 }
