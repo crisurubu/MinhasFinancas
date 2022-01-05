@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.crisurubu.minhasfinancas.api.dto.UsuarioDTO;
 import com.crisurubu.minhasfinancas.model.entities.Usuario;
+import com.crisurubu.minhasfinancas.model.exceptions.ErroAutenticacao;
 import com.crisurubu.minhasfinancas.model.service.LancamentoService;
 import com.crisurubu.minhasfinancas.model.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,5 +67,65 @@ public class UsuarioResourceTest {
 							
 		
 	}
+	
+	@Test
+	public void deveCriarUmNovoUsuario() throws Exception {
+		//cenario
+		String email = "usuario@gmail.com";
+		String senha = "123";
+		
+		UsuarioDTO dto = UsuarioDTO.builder().email("usuario@gmail.com").senha("123").build();
+		Usuario usuario = Usuario.builder().id(1l).email(email).senha(senha).build();
+		
+		Mockito.when(service.salvarUsuario(Mockito.any(Usuario.class))).thenReturn(usuario);
+		
+		String json = new ObjectMapper().writeValueAsString(dto);
+		
+		//execucao verificacao
+		//frontend
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(API )
+																	  .accept(JSON)
+																	  .contentType(JSON)
+																	  .content(json);
+		//beckend
+		mvc.perform(request).andExpect(MockMvcResultMatchers.status().isCreated())
+							.andExpect(MockMvcResultMatchers.jsonPath("id"). value(usuario.getId()))
+							.andExpect(MockMvcResultMatchers.jsonPath("nome"). value(usuario.getNome()))
+							.andExpect(MockMvcResultMatchers.jsonPath("email"). value(usuario.getEmail()));
+							
+		
+	}
+	
+	
+	@Test
+	public void deveRetornarBadRequestAoObterErroDeAutenticacao() throws Exception {
+		//cenario
+		String email = "usuario@gmail.com";
+		String senha = "123";
+		
+		UsuarioDTO dto = UsuarioDTO.builder().email(email).senha(senha).build();
+		Mockito.when(service.autenticar(email, senha)).thenThrow(ErroAutenticacao.class);
+		
+		String json = new ObjectMapper().writeValueAsString(dto);
+		
+		//execucao verificacao
+		
+		//frontend
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(API.concat("/autenticar"))
+																	  .content(json)
+																	  .accept(JSON)
+																	  .contentType(JSON)
+																	  .content(json);
+																	 
+		
+																	  
+																	  
+		//beckend
+		mvc.perform(request).andExpect(MockMvcResultMatchers.status().isBadRequest());
+		
+	}
+	
+	
+	
 
 }
